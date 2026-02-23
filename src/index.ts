@@ -1,15 +1,15 @@
 export * from './types';
-export * from './interceptors';
 export * from './http';
-export * from './config'; // Export the instance class
+export * from './config';
+export * from './interceptors';
 
 import { http } from './http';
 import type { RequestConfig } from './types';
 import { NextFetchClient } from './config';
 
 /**
- * Singleton API (default)
- * Works like api.get/post/put/delete
+ * Default singleton API (basic usage)
+ * Interceptors are instance-based now, not global
  */
 export const api = {
     get: <T>(url: string, config?: RequestConfig) =>
@@ -28,11 +28,5 @@ export const api = {
         http<T>(url, { ...config, method: 'DELETE' }),
 };
 
-/**
- * Export NextFetchClient class for Axios-like instance usage
- * Example:
- *
- * const client = new NextFetchClient({ baseURL: '/api', headers: { Authorization: 'Bearer ...' } });
- * client.get<User[]>('/users');
- */
+// Export the Axios-like client
 export { NextFetchClient };

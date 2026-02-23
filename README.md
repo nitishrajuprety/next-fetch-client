@@ -40,21 +40,17 @@ bun add @nitishrajuprety/next-fetch-client
 import { api } from '@nitishrajuprety/next-fetch-client';
 
 interface User {
-  id: number;
-  name: string;
+    id: number;
+    name: string;
 }
 
 // GET request
-const users = await api.get<User[]>('/api/users', {
-  next: { revalidate: 60 },
-});
+const users = await api.get<User[]>('/api/users', { next: { revalidate: 60 } });
 
 // POST request
-const newUser = await api.post<User, { name: string }>('/api/users', {
-  name: 'Nitish',
-});
+const newUser = await api.post<User, { name: string }>('/api/users', { name: 'Alice' });
 ```
-> Quick usage when no base URL or default headers are needed.
+> Singleton `api` is for quick usage; interceptors are instance-based only.
 
 ## 📦 Axios-like Instance – `NextFetchClient`
 
@@ -71,7 +67,7 @@ const client = new NextFetchClient({
 const users = await client.get<User[]>('/users');
 
 // POST request
-const newUser = await client.post<User, { name: string }>('/users', { name: 'Alice' });
+const newUser = await client.post<User, { name: string }>('/users', { name: 'Bob' });
 
 ```
 > Useful for multiple API endpoints with shared config like `baseURL`, default headers, or default Next.js caching options.
@@ -81,23 +77,28 @@ const newUser = await client.post<User, { name: string }>('/users', { name: 'Ali
 ## ⚡ Interceptors
 
 ```ts
-import { setRequestInterceptor, setResponseInterceptor } from '@nitishrajuprety/next-fetch-client';
+// Add request & response interceptors
+const reqId = client.interceptors.request.use(async (config) => {
+    config.headers = { ...config.headers, Authorization: 'Bearer my-token' };
+    return config;
+});
 
-// Request interceptor – add auth token
-setRequestInterceptor(async (config) => ({
-    ...config,
-    headers: {
-        ...config.headers,
-        Authorization: `Bearer ${process.env.API_TOKEN}`,
-    },
-}));
+const resId = client.interceptors.response.use((response) => {
+    console.log('Response received:', response);
+    return response;
+});
 
-// Response interceptor – transform responses globally
-setResponseInterceptor<User[]>((users) =>
-    users.map(u => ({ ...u, name: u.name.toUpperCase() }))
-);
+// Multiple interceptors supported
+client.interceptors.request.use((config) => {
+    console.log('Another request interceptor', config);
+    return config;
+});
+
+// Eject interceptors if needed
+client.interceptors.request.eject(reqId);
+client.interceptors.response.eject(resId);
 ```
-> Interceptors apply to both singleton `api` and any `NextFetchClient` instance.
+> Interceptors are per-instance, just like Axios.
 
 ---
 

@@ -1,40 +1,43 @@
 import type { RequestConfig } from './types';
 
-export type RequestInterceptor = (
+export type RequestInterceptorFn = (
     config: RequestConfig
-) => Promise<RequestConfig> | RequestConfig;
+) => RequestConfig | Promise<RequestConfig>;
 
-export type ResponseInterceptor<T = any> = (
+export type ResponseInterceptorFn<T = any> = (
     response: T
-) => Promise<T> | T;
+) => T | Promise<T>;
 
-let requestInterceptor: RequestInterceptor | null = null;
-let responseInterceptor: ResponseInterceptor<any> | null = null;
-
-export function setRequestInterceptor(fn: RequestInterceptor) {
-    requestInterceptor = fn;
+interface Interceptor<T> {
+    id: number;
+    fulfilled: T;
 }
 
-export function setResponseInterceptor<T>(fn: ResponseInterceptor<T>) {
-    responseInterceptor = fn as ResponseInterceptor<any>;
+export class InterceptorManager<T> {
+    private interceptors: Interceptor<T>[] = [];
+    private counter = 0;
+
+    use(fulfilled: T): number {
+        const id = this.counter++;
+        this.interceptors.push({ id, fulfilled });
+        return id;
+    }
+
+    eject(id: number) {
+        this.interceptors = this.interceptors.filter((i) => i.id !== id);
+    }
+
+    async run(arg: any): Promise<any> {
+        let result = arg;
+        for (const interceptor of this.interceptors) {
+            result = await (interceptor.fulfilled as any)(result);
+        }
+        return result;
+    }
 }
 
-/**
- * Run request interceptor
- */
-export async function runRequestInterceptor(
-    config: RequestConfig
-): Promise<RequestConfig> {
-    if (!requestInterceptor) return config;
-    return requestInterceptor(config);
-}
-
-/**
- * Run response interceptor
- * Type-safe: generic T is preserved
- */
-export async function runResponseInterceptor<T>(response: T): Promise<T> {
-    if (!responseInterceptor) return response;
-    // cast to T because interceptor may be typed as any internally
-    return (await responseInterceptor(response)) as T;
+// Export a type for instance interceptors
+export interface Interceptors {
+    request: InterceptorManager<RequestInterceptorFn>;
+    response: InterceptorManager<ResponseInterceptorFn>;
 }
