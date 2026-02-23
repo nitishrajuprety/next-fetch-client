@@ -3,6 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/@nitishrajuprety/next-fetch-client)](https://www.npmjs.com/package/@nitishrajuprety/next-fetch-client)
 [![license](https://img.shields.io/npm/l/@nitishrajuprety/next-fetch-client)](https://opensource.org/licenses/MIT)
 [![downloads](https://img.shields.io/npm/dm/@nitishrajuprety/next-fetch-client)](https://www.npmjs.com/package/@nitishrajuprety/next-fetch-client)
+[![GitHub stars](https://img.shields.io/github/stars/nitishrajuprety/next-fetch-client?style=social)](https://github.com/nitishrajuprety/next-fetch-client/stargazers)
 
 **Axios-like fetch wrapper optimized for Next.js 16 App Router**
 
@@ -33,7 +34,7 @@ bun add @nitishrajuprety/next-fetch-client
 
 ---
 
-## 📦 Usage
+## 📦 Usage – Singleton api
 
 ```ts
 import { api } from '@nitishrajuprety/next-fetch-client';
@@ -52,8 +53,28 @@ const users = await api.get<User[]>('/api/users', {
 const newUser = await api.post<User, { name: string }>('/api/users', {
   name: 'Nitish',
 });
+```
+> Quick usage when no base URL or default headers are needed.
+
+## 📦 Axios-like Instance – `NextFetchClient`
+
+```ts
+import { NextFetchClient } from '@nitishrajuprety/next-fetch-client';
+
+const client = new NextFetchClient({
+    baseURL: 'https://api.example.com',
+    headers: { 'X-Client': 'next-fetch-client' },
+    next: { revalidate: 60 }
+});
+
+// GET request
+const users = await client.get<User[]>('/users');
+
+// POST request
+const newUser = await client.post<User, { name: string }>('/users', { name: 'Alice' });
 
 ```
+> Useful for multiple API endpoints with shared config like `baseURL`, default headers, or default Next.js caching options.
 
 ---
 
@@ -62,20 +83,21 @@ const newUser = await api.post<User, { name: string }>('/api/users', {
 ```ts
 import { setRequestInterceptor, setResponseInterceptor } from '@nitishrajuprety/next-fetch-client';
 
-// Add auth token
+// Request interceptor – add auth token
 setRequestInterceptor(async (config) => ({
-  ...config,
-  headers: {
-    ...config.headers,
-    Authorization: `Bearer ${process.env.API_TOKEN}`,
-  },
+    ...config,
+    headers: {
+        ...config.headers,
+        Authorization: `Bearer ${process.env.API_TOKEN}`,
+    },
 }));
 
-// Transform response globally
+// Response interceptor – transform responses globally
 setResponseInterceptor<User[]>((users) =>
-  users.map(u => ({ ...u, name: u.name.toUpperCase() }))
+    users.map(u => ({ ...u, name: u.name.toUpperCase() }))
 );
 ```
+> Interceptors apply to both singleton `api` and any `NextFetchClient` instance.
 
 ---
 
@@ -88,16 +110,22 @@ fd.append('file', fileInput.files[0]);
 await api.post('/api/upload', fd);
 ```
 
-> No need to manually set `Content-Type`; automatically handled.
+> `Content-Type` is automatically handled; no need to set it manually.
 
 ---
 
 ## 🔧 Next.js Cache Support
 
 ```ts
+// Singleton api
 await api.get<User[]>('/api/users', { next: { revalidate: 120, tags: ['users'] } });
 await api.post<User, { name: string }>('/api/users', { name: 'Alice' }, { next: { revalidate: 0 } });
+
+// Instance client
+const client = new NextFetchClient({ baseURL: '/api', next: { revalidate: 60 } });
+await client.get<User[]>('/users');
 ```
+> Works with ISR revalidation, tags, and no-cache options.
 
 ---
 ## ⚖️ License
