@@ -1,17 +1,10 @@
 import { ApiError, RequestConfig } from './types';
-import { runRequestInterceptor, runResponseInterceptor } from './interceptors';
 
-/**
- * Core HTTP function
- */
 export async function http<TResponse = unknown, TBody = unknown>(
     url: string,
     config: RequestConfig<TBody> = {}
 ): Promise<TResponse> {
-    // Apply request interceptor
-    const finalConfig = await runRequestInterceptor(config);
-
-    const { method = 'GET', headers, body, ...rest } = finalConfig;
+    const { method = 'GET', headers, body, ...rest } = config;
 
     const isFormData =
         typeof FormData !== 'undefined' && body instanceof FormData;
@@ -33,13 +26,12 @@ export async function http<TResponse = unknown, TBody = unknown>(
                 : isFormData || isBlob
                     ? body
                     : JSON.stringify(body),
-        ...rest, // preserves Next.js cache options
+        ...rest,
     });
 
     const contentType = response.headers.get('content-type');
 
     let parsed: unknown;
-
     if (contentType?.includes('application/json')) {
         parsed = await response.json();
     } else {
@@ -55,8 +47,5 @@ export async function http<TResponse = unknown, TBody = unknown>(
         });
     }
 
-    // Cast parsed to TResponse here, and then pass to interceptor
-    const typedResponse = parsed as TResponse;
-
-    return runResponseInterceptor<TResponse>(typedResponse);
+    return parsed as TResponse;
 }
