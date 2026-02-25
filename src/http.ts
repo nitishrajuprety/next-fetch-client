@@ -1,5 +1,11 @@
 import { ApiError, RequestConfig } from './types';
 
+/**
+ * Sends an HTTP request to the specified URL with the given configuration.
+ * @param url The URL to send the request to.
+ * @param config The configuration object for the request. Contains method, headers, body, and additional options.
+ * @return A Promise that resolves to the parsed response data of type TResponse. Rejects with an ApiError if the request fails.
+ */
 export async function http<TResponse = unknown, TBody = unknown>(
     url: string,
     config: RequestConfig<TBody> = {}

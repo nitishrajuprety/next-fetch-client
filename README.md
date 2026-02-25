@@ -63,14 +63,20 @@ const client = new NextFetchClient({
     next: { revalidate: 60 }
 });
 
-// GET request
-const users = await client.get<User[]>('/users');
+// GET request with params (automatically converted to query string)
+const users = await client.get<User[]>('/users', undefined, {
+    search: 'alice',
+    limit: 10,
+    active: true,
+});
 
 // POST request
 const newUser = await client.post<User, { name: string }>('/users', { name: 'Bob' });
 
 ```
 > Useful for multiple API endpoints with shared config like `baseURL`, default headers, or default Next.js caching options.
+
+> Params object works for GET requests only; converts `string | number | boolean` to query string.
 
 ---
 

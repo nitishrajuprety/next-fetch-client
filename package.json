@@ -1,6 +1,6 @@
 {
   "name": "@nitishrajuprety/next-fetch-client",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Axios-like fetch wrapper with Next.js caching support",
   "author": "Nitish Raj Uprety",
   "license": "MIT",
