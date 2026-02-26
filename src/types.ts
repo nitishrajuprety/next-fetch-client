@@ -16,21 +16,21 @@ export type HttpMethod =
  * @property {number} status - The HTTP status code.
  * @property {unknown} data - Additional error data.
  */
-export interface ApiErrorShape {
+export interface ApiErrorOptions<T = unknown> {
     message: string;
     status: number;
-    data?: unknown;
+    data?: T;
 }
 
 /**
  * Represents an error that occurs during API operations.
  * Extends the built-in Error class to include additional metadata.
  */
-export class ApiError extends Error {
+export class ApiError<T = unknown> extends Error {
     status: number;
-    data?: unknown;
+    data?: T;
 
-    constructor({ message, status, data }: ApiErrorShape) {
+    constructor({ message, status, data }: ApiErrorOptions<T>) {
         super(message);
         this.name = 'ApiError';
         this.status = status;
