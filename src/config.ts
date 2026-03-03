@@ -86,13 +86,13 @@ export class NextFetchClient {
      * @param params Optional query parameters to append to the URL as a query string.
      * @return A promise that resolves to the response data of type T.
      */
-    get<T>(url: string, config?: RequestConfig, params?: Record<string, string | number | boolean>) {
+    get<T>(url: string, config?: RequestConfig, params?: Record<string, unknown>) {
         let finalUrl = url;
 
         if (params) {
             const qs = new URLSearchParams(
                 Object.entries(params).reduce((acc, [k, v]) => {
-                    acc[k] = v.toString();
+                    acc[k] = `${v}`;
                     return acc;
                 }, {} as Record<string, string>)
             ).toString();
