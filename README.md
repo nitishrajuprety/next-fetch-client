@@ -11,6 +11,7 @@
 - Supports JSON & FormData
 - Interceptors for request & response
 - Preserves Next.js caching (`next.revalidate`, `next.tags`)
+- Native support for Server-Sent Events (SSE)
 - Works with npm / pnpm / yarn / bun
 - ESM + CJS + `.d.ts` included
 
@@ -77,6 +78,21 @@ const newUser = await client.post<User, { name: string }>('/users', { name: 'Bob
 > Useful for multiple API endpoints with shared config like `baseURL`, default headers, or default Next.js caching options.
 
 > Params object works for GET requests only; converts `string | number | boolean` to query string.
+
+---
+
+## 🔄 Server-Sent Events (SSE)
+Handle real-time streams (like OpenAI/LLM responses) easily while maintaining your base configuration and request interceptors.
+```ts
+const controller = new AbortController();
+
+await client.sse('/api/stream', {
+    onMessage: (data) => console.log('New data:', data),
+    onOpen: () => console.log('Connected'),
+    onClose: () => console.log('Done'),
+    onError: (err) => console.error(err)
+}, { signal: controller.signal });
+```
 
 ---
 

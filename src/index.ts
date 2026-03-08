@@ -3,8 +3,8 @@ export * from './http';
 export * from './config';
 export * from './interceptors';
 
-import { http } from './http';
-import type { RequestConfig } from './types';
+import { http, httpSse } from './http';
+import type { RequestConfig, SseCallbacks } from './types';
 import { NextFetchClient } from './config';
 
 /**
@@ -63,6 +63,16 @@ export const api = {
     delete<T>(url: string, config?: RequestConfig) {
         return http<T>(url, { ...config, method: 'DELETE' });
     },
+
+    /**
+     * Establishes a Server-Sent Events (SSE) connection.
+     * @param url The API endpoint URL.
+     * @param callbacks Handlers for the SSE stream events.
+     * @param config Optional configuration object for the request.
+     */
+    sse(url: string, callbacks: SseCallbacks, config?: RequestConfig) {
+        return httpSse(url, callbacks, config);
+    }
 }
 
 export { NextFetchClient };

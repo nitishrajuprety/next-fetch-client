@@ -1,5 +1,5 @@
-import { http } from './http';
-import type { RequestConfig } from './types';
+import { http, httpSse } from './http';
+import type { RequestConfig, SseCallbacks } from './types';
 import { InterceptorManager, Interceptors, RequestInterceptorFn, ResponseInterceptorFn } from './interceptors';
 
 /**
@@ -154,5 +154,32 @@ export class NextFetchClient {
     private getFullURL(url: string) {
         if (!this.config.baseURL) return url;
         return url.startsWith('http') ? url : `${this.config.baseURL.replace(/\/$/, '')}/${url.replace(/^\//, '')}`;
+    }
+
+    /**
+     * Establishes a Server-Sent Events (SSE) connection.
+     * @param url The base URL for the request.
+     * @param callbacks Object containing stream event handlers (onMessage, onOpen, etc.).
+     * @param config Optional configuration object for the request.
+     * @param params Optional query parameters to append to the URL.
+     */
+    async sse(url: string, callbacks: SseCallbacks, config?: RequestConfig, params?: Record<string, unknown>) {
+        let finalUrl = url;
+
+        if (params) {
+            const qs = new URLSearchParams(
+                Object.entries(params).reduce((acc, [k, v]) => {
+                    acc[k] = `${v}`;
+                    return acc;
+                }, {} as Record<string, string>)
+            ).toString();
+            finalUrl += url.includes('?') ? '&' + qs : '?' + qs;
+        }
+
+        // Run request interceptors (e.g., for Auth headers)
+        const finalConfig = await this.interceptors.request.run(this.mergeConfig(config));
+
+        // Note: Response interceptors are skipped for streams
+        return httpSse(this.getFullURL(finalUrl), callbacks, finalConfig);
     }
 }
