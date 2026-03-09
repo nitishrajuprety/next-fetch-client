@@ -67,8 +67,12 @@ export async function httpSse(
     callbacks: SseCallbacks,
     config: RequestConfig<unknown> = {}
 ): Promise<void> {
-    // Explicitly destructure body out so it doesn't clash with RequestInit
-    const { method = 'GET', headers, body: _body, ...rest } = config;
+    // 1. Destructure body so we can handle it manually
+    const { method = 'GET', headers, body, ...rest } = config;
+
+    // 2. Identify body type (logic mirrored from your http function)
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+    const isBlob = typeof Blob !== 'undefined' && body instanceof Blob;
 
     try {
         const response = await fetch(url, {
@@ -77,15 +81,19 @@ export async function httpSse(
                 'Accept': 'text/event-stream',
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive',
+                // Add Content-Type if there is a body that isn't FormData/Blob
+                ...(body && !isFormData && !isBlob ? { 'Content-Type': 'application/json' } : {}),
                 ...headers,
             },
-            ...rest, // body is now excluded, fixing the TS error
+            // 3. Attach the body correctly
+            body: body == null ? undefined : isFormData || isBlob ? body : JSON.stringify(body),
+            ...rest,
         });
 
         if (!response.ok) {
             const errorData = await response.text();
             throw new ApiError({
-                message: response.statusText || 'SSE connection failed',
+                message: response.statusText || 'SSE request failed',
                 status: response.status,
                 data: errorData,
             });
@@ -94,7 +102,7 @@ export async function httpSse(
         callbacks.onOpen?.(response);
 
         const reader = response.body?.getReader();
-        if (!reader) throw new Error('Response body is null');
+        if (!reader) throw new Error('No readable stream available');
 
         const decoder = new TextDecoder();
         let buffer = '';
@@ -105,8 +113,6 @@ export async function httpSse(
 
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split('\n');
-
-            // Keep the last partial line in the buffer
             buffer = lines.pop() || '';
 
             for (const line of lines) {

@@ -84,14 +84,17 @@ const newUser = await client.post<User, { name: string }>('/users', { name: 'Bob
 ## 🔄 Server-Sent Events (SSE)
 Handle real-time streams (like OpenAI/LLM responses) easily while maintaining your base configuration and request interceptors.
 ```ts
-const controller = new AbortController();
+import { api } from '@nitishrajuprety/next-fetch-client';
 
-await client.sse('/api/stream', {
-    onMessage: (data) => console.log('New data:', data),
-    onOpen: () => console.log('Connected'),
-    onClose: () => console.log('Done'),
+await api.sse('/api/chat', {
+    onMessage: (data) => console.log('Chunk:', data),
+    onOpen: () => console.log('Stream started'),
+    onClose: () => console.log('Stream ended'),
     onError: (err) => console.error(err)
-}, { signal: controller.signal });
+}, {
+    method: 'POST',
+    body: { model: 'gpt-4', prompt: 'Hello!' }
+});
 ```
 
 ---
