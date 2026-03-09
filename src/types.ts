@@ -79,11 +79,25 @@ export interface RequestConfig<TBody = unknown> {
  */
 export interface SseCallbacks {
     /** Called when a new message is received. */
-    onMessage?: (data: string) => void;
+    onMessage?: (data: SseMessage) => void;
     /** Called when the connection is successfully opened. */
     onOpen?: (response: Response) => void;
     /** Called when an error occurs during the stream. */
     onError?: (error: unknown) => void;
     /** Called when the stream is closed by the server or aborted. */
     onClose?: () => void;
+}
+
+/**
+ * Represents a complete SSE message packet.
+ * @property {string} [event] - Event type sent by server
+ * @property {string} [data] - Data message sent by server
+ * @property {string} [id] - Identifier sent by server
+ * @property {number} [retry] - No. of seconds after which retry is allowed by server
+ */
+export interface SseMessage {
+    event?: string;
+    data?: string;
+    id?: string;
+    retry?: number;
 }
