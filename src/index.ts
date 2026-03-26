@@ -57,11 +57,12 @@ export const api = {
     /**
      * Sends a DELETE request to the specified URL with optional configuration.
      * @param url The API endpoint URL.
+     * @param body Optional data to send in the request body.
      * @param config Optional configuration object for the request.
      * @return A Promise that resolves to the response data of type T.
      */
-    delete<T>(url: string, config?: RequestConfig) {
-        return http<T>(url, { ...config, method: 'DELETE' });
+    delete<T, B = unknown>(url: string, body?: B, config?: RequestConfig<B>) {
+        return http<T, B>(url, { ...config, method: 'DELETE', body });
     },
 
     /**

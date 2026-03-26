@@ -79,6 +79,8 @@ const newUser = await client.post<User, { name: string }>('/users', { name: 'Bob
 
 > Params object works for GET requests only; converts `string | number | boolean` to query string.
 
+> **Note on `DELETE` with Body:** This package supports sending a payload in `DELETE` requests to maintain parity with Axios. However, please note that according to RFC 9110, `DELETE` request bodies have no defined semantics and may be ignored or rejected by some servers, proxies, or CDNs. Use this feature only if your API specifically requires it.
+
 ---
 
 ## 🔄 Server-Sent Events (SSE)

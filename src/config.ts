@@ -106,11 +106,11 @@ export class NextFetchClient {
     /**
      * Sends a DELETE request to the specified URL.
      * @param url The URL to send the request to.
-     * @param config Optional configuration object for the request.
-     * @return A Promise that resolves to the response data of type T.
+     * @param body Optional data to send in the request body.
+     * @param config Optional configuration object.
      */
-    delete<T>(url: string, config?: RequestConfig) {
-        return this.request<T>(url, { ...config, method: 'DELETE' });
+    delete<T, B = unknown>(url: string, body?: B, config?: RequestConfig<B>) {
+        return this.request<T, B>(url, { ...config, method: 'DELETE', body });
     }
 
     /**
