@@ -1,21 +1,18 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
-import dts from 'vite-plugin-dts'
 
 export default defineConfig({
-    plugins: [dts({rollupTypes: true})],
     build: {
-        minify: 'esbuild',
         lib: {
             entry: resolve(__dirname, 'src/index.ts'),
             name: 'NextFetchClient',
             fileName: (format) => `index.${format}.js`,
             formats: ['es', 'cjs']
         },
-        rolldownOptions: {
+        rollupOptions: {
             external: [], // no deps yet
         },
-        sourcemap: false,
+        sourcemap: true,
         emptyOutDir: true,
     }
 });
