@@ -5,7 +5,7 @@
 [![downloads](https://img.shields.io/npm/dm/@nitishrajuprety/next-fetch-client)](https://www.npmjs.com/package/@nitishrajuprety/next-fetch-client)
 [![GitHub stars](https://img.shields.io/github/stars/nitishrajuprety/next-fetch-client?style=social)](https://github.com/nitishrajuprety/next-fetch-client/stargazers)
 
-**Axios-like fetch wrapper optimized for Next.js 16 App Router**
+**Axios-like fetch wrapper optimized for Next.js App Router**
 
 - Fully typed with TypeScript
 - Supports JSON & FormData

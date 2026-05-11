@@ -42,11 +42,11 @@ export class ApiError<T = unknown> extends Error {
  * Configuration interface for Next.js API route fetching behavior.
  * Provides options to control revalidation intervals and cache tags.
  *
- * @property {number} [revalidate] - Time interval (in seconds) for revalidating data. Defaults to 60 seconds.
+ * @property {number | false} [revalidate] - Time interval (in seconds) for revalidating data. Defaults to 60 seconds.
  * @property {string[]} [tags] - Array of cache tags associated with the data. Used for targeted cache invalidation.
  */
 export interface NextFetchConfig {
-    revalidate?: number;
+    revalidate?: number | false;
     tags?: string[];
 }
 
