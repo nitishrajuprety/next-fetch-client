@@ -90,14 +90,10 @@ export class NextFetchClient {
         let finalUrl = url;
 
         if (params) {
-            const qs = new URLSearchParams(
-                Object.entries(params).reduce((acc, [k, v]) => {
-                    acc[k] = `${v}`;
-                    return acc;
-                }, {} as Record<string, string>)
-            ).toString();
-
-            finalUrl += url.includes('?') ? '&' + qs : '?' + qs;
+            const qs = this.buildQueryString(params);
+            if (qs) {
+                finalUrl += url.includes('?') ? '&' + qs : '?' + qs;
+            }
         }
 
         return this.request<T>(finalUrl, { ...config, method: 'GET' });
@@ -167,19 +163,46 @@ export class NextFetchClient {
         let finalUrl = url;
 
         if (params) {
-            const qs = new URLSearchParams(
-                Object.entries(params).reduce((acc, [k, v]) => {
-                    acc[k] = `${v}`;
-                    return acc;
-                }, {} as Record<string, string>)
-            ).toString();
-            finalUrl += url.includes('?') ? '&' + qs : '?' + qs;
+            const qs = this.buildQueryString(params);
+            if (qs) {
+                finalUrl += url.includes('?') ? '&' + qs : '?' + qs;
+            }
         }
 
-        // Run request interceptors (e.g., for Auth headers)
+        // Run request interceptors so things like auth headers are attached
         const finalConfig = await this.interceptors.request.run(this.mergeConfig(config));
 
-        // Note: Response interceptors are skipped for streams
         return httpSse(this.getFullURL(finalUrl), callbacks, finalConfig);
+    }
+
+    /**
+     * Serializes a parameters object into a query string, safely handling arrays and primitives.
+     *
+     * @param params - An object containing key-value pairs to be converted into a query string.
+     * @returns A URL-encoded query string.
+     */
+    private buildQueryString(params: Record<string, unknown>): string {
+        const searchParams = new URLSearchParams();
+
+        for (const [key, value] of Object.entries(params)) {
+            // 1. Skip keys that have null or undefined values
+            if (value === null || value === undefined) {
+                continue;
+            }
+
+            // 2. If a value is an array, append each item to generate multiple key-value pairs
+            if (Array.isArray(value)) {
+                for (const item of value) {
+                    if (item !== null && item !== undefined) {
+                        searchParams.append(key, String(item));
+                    }
+                }
+            } else {
+                // 3. If a value is a primitive, use set
+                searchParams.set(key, String(value));
+            }
+        }
+
+        return searchParams.toString();
     }
 }
